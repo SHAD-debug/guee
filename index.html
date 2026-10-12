@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة خمّن الرقم</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            font-family: Tahoma, Arial, sans-serif;
+            background: linear-gradient(135deg, #f1f1f7, #e6e8f5);
+            color: #252743;
+        }
+
+        .game-card {
+            width: 100%;
+            max-width: 720px;
+            min-height: 620px;
+            padding: 40px 25px 25px;
+            background: rgba(255, 255, 255, 0.75);
+            border: 1px solid #d5d6e2;
+            border-radius: 30px;
+            box-shadow: 0 10px 35px rgba(44, 47, 95, 0.08);
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            font-size: 36px;
+            color: #292c55;
+        }
+
+        .description {
+            font-size: 22px;
+            margin-bottom: 26px;
+            color: #45465c;
+        }
+
+        .difficulties {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 22px;
+            flex-wrap: wrap;
+        }
+
+        button, input {
+            font-family: inherit;
+            font-size: 19px;
+            border-radius: 16px;
+            transition: 0.2s;
+        }
+
+        button {
+            padding: 13px 25px;
+            cursor: pointer;
+            border: 1px solid #8589a5;
+            background: #fff;
+            color: #454968;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px #25274318;
+        }
+
+        .difficulty.active,
+        .primary {
+            background: #3658bc;
+            color: white;
+            border-color: #3658bc;
+        }
+
+        .guess-row {
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        input {
+            width: 205px;
+            min-width: 0;
+            padding: 14px;
+            text-align: center;
+            border: 2px solid #777b92;
+            background: #fff;
+            color: #252743;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #3658bc;
+        }
+
+        .guess-row button {
+            min-width: 105px;
+        }
+
+        .message {
+            min-height: 60px;
+            margin: 24px 0;
+            padding: 16px 10px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #3658bc;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 28px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 15px;
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 29px;
+            font-weight: bold;
+            margin-bottom: 7px;
+            color: #292c55;
+        }
+
+        .stat-label {
+            font-size: 18px;
+            color: #65667a;
+        }
+
+        .range {
+            font-size: 15px;
+            color: #77788a;
+            margin-top: 14px;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @media (max-width: 480px) {
+            .game-card {
+                padding: 30px 15px 20px;
+                min-height: auto;
+            }
+
+            h1 {
+                font-size: 29px;
+            }
+
+            .description {
+                font-size: 17px;
+            }
+
+            button, input {
+                font-size: 16px;
+            }
+
+            button {padding: 12px 17px;
+            }
+
+            input {
+                width: 150px;
+            }
+
+            .guess-row button {
+                min-width: 80px;
+            }
+
+            .stat-label {
+                font-size: 15px;
+            }
+        }
+    </style>
+ </head>
+
+ <body>
+
+    <main class="game-card">
+
+        <h1>🎮 خمّن الرقم</h1>
+
+        <p class="description">
+            أنا أفكر برقم بين 1 و 500، هل تقدر تخمّنه؟
+        </p>
+
+        <div class="difficulties">
+            <button class="difficulty" data-level="easy">سهل</button>
+            <button class="difficulty active" data-level="normal">عادي</button>
+            <button class="difficulty" data-level="hard">صعب</button>
+        </div>
+
+        <div class="guess-row">
+            <input
+                type="number"
+                id="guessInput"
+                min="1"
+                max="500"
+                placeholder="؟"
+                aria-label="اكتب تخمينك"
+            >
+            <button class="primary" id="guessBtn">خمّن</button>
+        </div>
+
+        <div class="range" id="attemptLimit">
+            عندك 10 محاولات
+        </div>
+
+        <div class="message" id="message" aria-live="polite">
+            ابدأ التخمين واكتشف الرقم المخفي!
+        </div>
+
+        <div class="actions">
+            <button id="newGameBtn">لعبة جديدة</button>
+            <button id="hintBtn">تلميح</button>
+        </div>
+
+        <div class="stats">
+            <div>
+                <span class="stat-number" id="bestScore">-</span>
+                <span class="stat-label">أفضل نتيجة</span>
+            </div>
+
+            <div>
+                <span class="stat-number" id="attempts">0</span>
+                <span class="stat-label">المحاولات</span>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const MIN_NUMBER = 1;
+        const MAX_NUMBER = 500;
+
+        const limits = {
+            easy: 15,
+            normal: 10,
+            hard: 7
+        };
+
+        let secretNumber;
+        let attempts;
+        let maxAttempts;
+        let gameOver;
+        let difficulty = "normal";
+        let hintUsed;
+
+        const guessInput = document.getElementById("guessInput");
+        const guessBtn = document.getElementById("guessBtn");
+        const message = document.getElementById("message");
+        const attemptsDisplay = document.getElementById("attempts");
+        const bestScoreDisplay = document.getElementById("bestScore");
+        const attemptLimit = document.getElementById("attemptLimit");
+        const hintBtn = document.getElementById("hintBtn");
+
+        function getBestScore() {
+            try {
+                const scores = JSON.parse(
+                    localStorage.getItem("guessNumberBestScores") || "{}"
+                );
+                return scores[difficulty] ?? null;
+            } catch {
+                return null;
+            }
+        }
+
+        function updateBestScore() {
+            const best = getBestScore();
+            bestScoreDisplay.textContent = best === null ? "-" : best;
+        }
+
+        function saveBestScore(score) {
+            try {
+                const scores = JSON.parse(
+                    localStorage.getItem("guessNumberBestScores") || "{}"
+                );
+
+                if (
+                    scores[difficulty] === undefined ||
+                    score < scores[difficulty]
+                ) {
+                    scores[difficulty] = score;
+                    localStorage.setItem(
+                        "guessNumberBestScores",
+                        JSON.stringify(scores)
+                    );
+                }
+            } catch {
+                // تستمر اللعبة حتى لو تعذر حفظ النتيجة.
+            }
+
+            updateBestScore();
+        }
+
+        function newGame() {
+            secretNumber = Math.floor(
+                Math.random() * (MAX_NUMBER - MIN_NUMBER + 1)
+            ) + MIN_NUMBER;
+
+            attempts = 0;
+            maxAttempts = limits[difficulty];
+            gameOver = false;
+            hintUsed = false;attemptsDisplay.textContent = "0";
+            message.textContent = "ابدأ التخمين واكتشف الرقم المخفي!";
+            message.style.color = "#3658bc";
+
+            guessInput.value = "";
+            guessInput.disabled = false;
+            guessBtn.disabled = false;
+            hintBtn.disabled = false;
+
+            attemptLimit.textContent = `عندك محاولات`;
+
+            updateBestScore();
+            guessInput.focus();
+        }
+
+        function makeGuess() {
+            if (gameOver) return;
+
+            const guess = Number(guessInput.value);
+
+            if (
+                guessInput.value.trim() === "" ||
+                !Number.isInteger(guess) ||
+                guess < MIN_NUMBER ||
+                guess > MAX_NUMBER
+            ) {
+                message.textContent = "اكتب رقمًا صحيحًا من 1 إلى 500!";
+                message.style.color = "#c0395b";
+                return;
+            }
+
+            attempts++;
+            attemptsDisplay.textContent = attempts;
+
+            if (guess === secretNumber) {
+                gameOver = true;
+
+                message.textContent =
+                   background;rgba(255, 255, 255, 0.75);
+            border: 1  ,solid 
+
+                message.style.color = "#218653";
+                saveBestScore(attempts);
+                endGame();
+                return;
+            }
+
+            if (guess < secretNumber) {
+                message.textContent = "⬆️ الرقم أكبر من تخمينك!";
+            } else {
+                message.textContent = "⬇️ الرقم أصغر من تخمينك!";
+            }
+
+            message.style.color = "#3658bc";
+            guessInput.value = "";
+
+            if (attempts >= maxAttempts) { 
+                gameOver = true;
+                 message.textContent = " 😔 انتهت محاولاتك! الرقم كان";
+                  message.style.color = "#c0395b"; 
+                  attemptLimit.textContent = "انتهت المحاولات"; 
+                  endGame(); } else { 
+                    attemptLimit.textContent = ' باقي لك محاولات';
+                     guessInput.focus(); } }
+        
+
+        function endGame() {
+            guessInput.disabled = true;
+            guessBtn.disabled = true;
+            hintBtn.disabled = true;
+        }
+
+        function showHint() {
+             if (gameOver || hintUsed) return;
+        hintUsed = true;
+
+        const parity = secretNumber % 2 === 0
+                ? "زوجي" 
+            
+            : "فردي";
+
+        const lower = Math.max(MIN_NUMBER, secretNumber - 50);
+        const upper = Math.min(MAX_NUMBER, secretNumber + 50);
+
+        message.textContent =
+            '💡 تلميح: الرقم ${parity}، وهو بين ${lower} و ${upper}.';
+        message.style.color = "#9a6700";
+        hintBtn.disabled = true;
+      }   // <-- هذا القوس هو الناقص غالبًا
+
+        document.querySelectorAll(".difficulty").forEach(button => {
+            button.addEventListener("click", () => {
+                difficulty = button.dataset.level;
+
+                document.querySelectorAll(".difficulty").forEach(btn => {
+                    btn.classList.toggle("active", btn === button);
+                });
+
+                newGame();
+            });
+        });
+
+        guessBtn.addEventListener("click", makeGuess);
+
+        document.getElementById("newGameBtn")
+            .addEventListener("click", newGame);
+
+        hintBtn.addEventListener("click", showHint);
+
+        guessInput.addEventListener("keydown", event => {
+            if (event.key === "Enter") {
+                makeGuess();
+            }
+        });
+
+        newGame();
+      </script>
+    
+  </body>
+</html>
